@@ -48,7 +48,7 @@ const GROUP = '120363@g.us';
 const ADMIN = '56900000001@s.whatsapp.net';
 const fakeSock = {
   user: { id: '56900000099:5@s.whatsapp.net', lid: '999@lid' },
-  signalRepository: { lidMapping: { getPNForLID: async () => null } },
+  signalRepository: { lidMapping: { getPNForLID: async () => null, getLIDForPN: async (pn) => (pn === '56900000001@s.whatsapp.net' ? '5005@lid' : null) } },
   groupMetadata: async (jid) => ({
     id: jid, subject: 'Ventas zona oriente',
     participants: [
@@ -74,8 +74,7 @@ const { state } = await import(src('state.js'));
 const { handleGroupMessage } = await import(src('moderator.js'));
 const { handleParticipantsUpdate } = await import(src('joins.js'));
 const { refreshGroup } = await import(src('groups.js'));
-const { sanctionMessage } = await import(src('sanctions.js'));
-void sanctionMessage;
+const { handlePrivateMessage } = await import(src('commands.js'));
 
 const RULES = {
   only_chile: { enabled: true },
@@ -226,4 +225,16 @@ test('editar un mensaje para agregar un enlace', async () => {
   const m = msg('56912340000@s.whatsapp.net', { protocolMessage: { type: 14, key: { id: 'ORIG' }, editedMessage: { conversation: 'ahora con x.cl' } } });
   await handleGroupMessage(m);
   assert.deepEqual(calls[0], ['delete', 'ORIG']);
+});
+
+test('comandos del dueño aunque WhatsApp oculte su número (LID)', async () => {
+  const dm = (from, text) => ({ key: { remoteJid: from, id: `P${++seq}`, fromMe: false }, message: { conversation: text } });
+  await handlePrivateMessage(dm('5005@lid', '/ayuda'));
+  assert.equal(calls.length, 1);
+  assert.match(calls[0][1], /Comandos disponibles/);
+  await handlePrivateMessage(dm('56900000001@s.whatsapp.net', '/ayuda'));
+  assert.equal(calls.length, 2);
+  await handlePrivateMessage(dm('6006@lid', '/ayuda')); // otra persona: se ignora
+  await handlePrivateMessage(dm('56977770000@s.whatsapp.net', '/prueba off'));
+  assert.equal(calls.length, 2);
 });

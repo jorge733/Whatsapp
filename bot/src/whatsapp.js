@@ -113,7 +113,12 @@ export async function connect() {
     if (type !== 'notify') return;
     for (const msg of messages) {
       const jid = msg.key?.remoteJid;
-      if (!jid || jid === 'status@broadcast' || !msg.message) continue;
+      if (!jid || jid === 'status@broadcast') continue;
+      if (!msg.message) {
+        // Mensaje que WhatsApp todavía no entregó descifrado (pasa a veces justo después de vincular).
+        if (!isJidGroup(jid) && !msg.key.fromMe) log.warn('Llegó un mensaje privado que no se pudo leer todavía. Si era un comando, envíalo de nuevo.');
+        continue;
+      }
       if (isJidGroup(jid)) inOrder(jid, () => handleGroupMessage(msg));
       else if (jid.endsWith('@s.whatsapp.net') || jid.endsWith('@lid')) inOrder('privado', () => handlePrivateMessage(msg));
     }

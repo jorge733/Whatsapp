@@ -4,11 +4,11 @@ import {
   addToBlacklist, removeFromBlacklist, activeWarningsFor, clearWarnings, updateSettings, updateGroup,
   logAction,
 } from './db.js';
-import { sendText } from './actions.js';
-import { resolvePerson } from './identity.js';
+import { sendText, getSocket } from './actions.js';
+import { resolvePerson, rememberLid } from './identity.js';
 import { syncGroups, botIsAdmin } from './groups.js';
 import { buildSummary } from './summary.js';
-import { normalizePhone, formatPhone } from './phone.js';
+import { normalizePhone, formatPhone, isLidJid, jidUser, pnJid } from './phone.js';
 import { describeMessage } from './content.js';
 import { RULE_LABELS } from './rules/index.js';
 import { getConnectionInfo } from './status.js';
@@ -139,21 +139,46 @@ async function run(cmd, args) {
   }
 }
 
+/**
+ * ¿El mensaje privado viene del dueño? WhatsApp a veces muestra un identificador oculto (LID)
+ * en vez del número; en ese caso se le pregunta a WhatsApp cuál es el LID del número del dueño.
+ */
+async function isOwner(msg, who) {
+  const owner = state.settings?.owner_phone;
+  if (!owner) return false;
+  if (who.phone) return who.phone === owner;
+  const jid = msg.key.remoteJid;
+  if (!isLidJid(jid)) return false;
+  try {
+    const ownerLid = await getSocket()?.signalRepository?.lidMapping?.getLIDForPN(pnJid(owner));
+    if (ownerLid && jidUser(ownerLid) === jidUser(jid)) {
+      rememberLid(jid, owner);
+      return true;
+    }
+  } catch (e) {
+    log.warn('No se pudo verificar el identificador oculto del dueño:', e?.message ?? e);
+  }
+  return false;
+}
+
 /** Mensaje privado recibido. Solo responde al dueño. */
 export async function handlePrivateMessage(msg) {
   if (msg.key.fromMe) return;
   const text = describeMessage(msg.message).text.trim();
   if (!text.startsWith('/')) return;
 
-  const owner = state.settings?.owner_phone;
   const who = await resolvePerson([msg.key.remoteJid, msg.key.remoteJidAlt, msg.key.senderPn].filter(Boolean));
-  if (!owner || who.phone !== owner) {
-    log.info(`Comando ignorado de ${formatPhone(who.phone ?? who.key)} (no es el dueño).`);
+  log.info(`Mensaje privado de ${formatPhone(who.phone ?? who.key)}: ${text}`);
+  if (!state.settings?.owner_phone) {
+    log.warn('No hay número de dueño configurado (owner_phone en la tabla settings). Se ignoró el comando.');
+    return;
+  }
+  if (!(await isOwner(msg, who))) {
+    log.info(`Comando ignorado: no viene del dueño (${formatPhone(state.settings.owner_phone)}).`);
     return;
   }
 
   const [cmd, ...args] = text.split(/\s+/);
-  log.info(`Comando del dueño: ${text}`);
   let reply;
   try {
     reply = await run(cmd.toLowerCase(), args);
