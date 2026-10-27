@@ -1,0 +1,24 @@
+{
+  "name": "moderacion-whatsapp-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bot de moderación automática para la comunidad de WhatsApp",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "configurar": "node scripts/configurar.js",
+    "test": "node --test --experimental-test-module-mocks test/*.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "baileys": "7.0.0-rc14",
+    "dotenv": "18.0.9",
+    "pino": "10.4.0",
+    "qrcode": "1.5.4",
+    "qrcode-terminal": "0.12.0"
+  }
+}

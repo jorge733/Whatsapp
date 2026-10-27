@@ -13,7 +13,7 @@ Zona horaria: **America/Santiago**. Todas las claves van en archivos `.env` que 
 ## Etapas
 
 - [x] **Etapa 1** — Base de datos en Supabase → [guía](docs/ETAPA-1-SUPABASE.md)
-- [ ] **Etapa 2** — Bot conectado a WhatsApp (prueba en tu computador)
+- [x] **Etapa 2** — Bot conectado a WhatsApp (prueba en tu computador) → [guía](docs/ETAPA-2-BOT.md)
 - [ ] **Etapa 3** — Panel web publicado en Vercel
 - [ ] **Etapa 4** — Bot 24/7 en Oracle Cloud con pm2
 
@@ -31,3 +31,21 @@ Zona horaria: **America/Santiago**. Todas las claves van en archivos `.env` que 
 | `blacklist` | Lista negra común |
 | `review_cases` | Casos dudosos para que decidas tú |
 | `lid_map` | Equivalencia entre identificadores ocultos (LID) y números reales |
+
+## Bot: cómo está organizado (`bot/src`)
+
+| Archivo | Qué hace |
+|---|---|
+| `index.js` | Arranca todo |
+| `whatsapp.js` | Conexión con WhatsApp, QR y reconexión |
+| `moderator.js` | Revisa cada mensaje de los grupos moderados |
+| `rules/` | Una regla por archivo (horario, enlaces, fotos, publicaciones). Aquí se sumará la revisión con IA |
+| `sanctions.js` | Advertencia → última advertencia → expulsión, modo prueba |
+| `joins.js` | Ingresos: lista negra y solo números chilenos |
+| `identity.js` | Número real detrás de los identificadores ocultos (LID) |
+| `reviews.js` | Casos para revisar |
+| `commands.js` | Comandos por WhatsApp del dueño |
+| `summary.js` | Resumen diario de las 21:30 |
+| `actions.js` | Acciones en WhatsApp con pausas entre cada una |
+
+Pruebas automáticas: `cd bot && npm test`.

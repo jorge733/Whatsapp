@@ -19,3 +19,6 @@ dist/
 logs/
 .DS_Store
 Thumbs.db
+
+# Imagen temporal del código QR del bot
+bot/qr.png
