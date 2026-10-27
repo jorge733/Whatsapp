@@ -23,7 +23,8 @@ export default async function HomePage() {
   ]);
 
   const health = botHealth(status);
-  const qrSvg = health.key === 'qr' && status?.qr_code
+  const pairingCode = health.key === 'qr' && status?.qr_code?.startsWith('codigo:') ? status.qr_code.slice(7) : null;
+  const qrSvg = health.key === 'qr' && status?.qr_code && !pairingCode
     ? await QRCode.toString(status.qr_code, { type: 'svg', margin: 1, width: 260 })
     : null;
   const [y, m, d] = today.split('-');
@@ -69,6 +70,16 @@ export default async function HomePage() {
           <p className="mt-3 text-sm">
             El bot no está enviando señales. Revisa que el programa esté encendido (en tu computador o en el servidor).
           </p>
+        )}
+        {pairingCode && (
+          <div className="mt-4 rounded-xl bg-amber-500/10 p-4 text-center">
+            <p className="muted text-sm">Código para vincular WhatsApp</p>
+            <p className="my-2 font-mono text-3xl font-bold tracking-widest">{pairingCode}</p>
+            <p className="text-sm">
+              En el celular del bot: WhatsApp → <b>⋮</b> → <b>Dispositivos vinculados</b> → <b>Vincular un dispositivo</b> →{' '}
+              <b>Vincular con el número de teléfono</b> → escribe este código.
+            </p>
+          </div>
         )}
         {qrSvg && (
           <div className="mt-4 flex flex-col items-center gap-3 rounded-xl bg-white p-4 text-center text-slate-900">

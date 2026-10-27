@@ -61,11 +61,28 @@ export async function connect() {
     getMessage: async (key) => getSentMessage(key.id),
   });
   setSocket(sock);
+  let pairingRequested = false;
 
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
-    if (qr) {
+    if (qr && config.pairingPhone && !sock.authState.creds.registered) {
+      // Vinculación con código (útil cuando el bot corre en el mismo celular que tiene WhatsApp).
+      if (!pairingRequested) {
+        pairingRequested = true;
+        try {
+          const code = (await sock.requestPairingCode(config.pairingPhone)).match(/.{1,4}/g).join('-');
+          log.info('════════════════════════════════════════');
+          log.info(`   CÓDIGO PARA VINCULAR WHATSAPP:  ${code}`);
+          log.info('════════════════════════════════════════');
+          log.info('WhatsApp → ⋮ → Dispositivos vinculados → Vincular un dispositivo →');
+          log.info('"Vincular con el número de teléfono" → escribe el código.');
+          await setConnectionState('esperando_qr', { qr_code: `codigo:${code}` });
+        } catch (e) {
+          log.error('No se pudo pedir el código de vinculación:', e?.message ?? e);
+        }
+      }
+    } else if (qr) {
       log.info('Escanea este código QR con WhatsApp del número del bot:');
       log.info('(WhatsApp → ⋮ o Configuración → Dispositivos vinculados → Vincular un dispositivo)');
       qrTerminal.generate(qr, { small: true });

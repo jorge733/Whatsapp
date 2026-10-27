@@ -21,6 +21,8 @@ export const config = {
   supabaseKey: required('SUPABASE_SECRET_KEY'),
   authFolder: path.resolve(root, process.env.AUTH_FOLDER?.trim() || 'auth'),
   // Nivel de detalle de los mensajes internos de WhatsApp (silent, error, warn, info, debug).
+  // Número del bot para vincular con código de 8 letras en vez de QR (ej: 56994487026). Vacío = usar QR.
+  pairingPhone: (process.env.PAIRING_PHONE ?? '').replace(/\D/g, '') || null,
   baileysLogLevel: process.env.BAILEYS_LOG_LEVEL?.trim() || 'silent',
   version: '1.0.0',
 };

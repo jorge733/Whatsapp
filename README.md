@@ -4,7 +4,7 @@ Sistema gratuito para moderar los grupos de la comunidad:
 
 | Carpeta | Qué es | Dónde corre |
 |---|---|---|
-| `bot/` | Bot de WhatsApp (Node.js + Baileys + pm2) | Tu computador → Oracle Cloud Always Free |
+| `bot/` | Bot de WhatsApp (Node.js + Baileys + pm2) | Tu computador (pruebas) → celular Android con Termux (24/7) |
 | `panel/` | Panel web de administración (Next.js, PWA) | Vercel (gratis) |
 | `supabase/` | Tablas y seguridad de la base de datos | Supabase (gratis) |
 
@@ -15,7 +15,7 @@ Zona horaria: **America/Santiago**. Todas las claves van en archivos `.env` que 
 - [x] **Etapa 1** — Base de datos en Supabase → [guía](docs/ETAPA-1-SUPABASE.md)
 - [x] **Etapa 2** — Bot conectado a WhatsApp (prueba en tu computador) → [guía](docs/ETAPA-2-BOT.md)
 - [x] **Etapa 3** — Panel web publicado en Vercel → [guía](docs/ETAPA-3-PANEL.md)
-- [ ] **Etapa 4** — Bot 24/7 en Oracle Cloud con pm2
+- [ ] **Etapa 4** — Bot 24/7 en un celular Android con Termux y pm2 → [guía](docs/ETAPA-4-ANDROID.md)
 
 ## Tablas principales
 

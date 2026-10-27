@@ -36,14 +36,23 @@ const key = await ask(
   (v) => v.startsWith('sb_secret_') || (v.startsWith('eyJ') && v.length > 100),
   'Esa no parece la clave secreta. Debe empezar con sb_secret_ (no uses la publishable).',
 );
+console.log('\n3) ¿Cómo vincular WhatsApp?');
+console.log('   - Si el bot corre en un COMPUTADOR: deja vacío y presiona Enter (se usará código QR).');
+console.log('   - Si el bot corre en el MISMO CELULAR del bot: escribe el número del bot (ej: 56994487026).');
+const pairing = await ask(
+  '   Número del bot (o vacío): ',
+  (v) => v === '' || /^\+?[\d\s-]{9,20}$/.test(v),
+  'Escribe solo el número, ej: 56994487026, o deja vacío.',
+);
 rl.close();
 
 fs.writeFileSync(envPath, [
   '# Claves privadas del bot. NO compartir ni subir a GitHub.',
   `SUPABASE_URL=${url.replace(/\/+$/, '')}`,
   `SUPABASE_SECRET_KEY=${key}`,
+  ...(pairing ? [`PAIRING_PHONE=${pairing.replace(/\D/g, '')}`] : []),
   '',
 ].join('\n'));
 
 console.log('\n✅ Listo. Se guardó el archivo .env');
-console.log('   Ahora inicia el bot (doble clic en INICIAR-BOT.bat o "npm start").\n');
+console.log('   Ahora inicia el bot.\n');
