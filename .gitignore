@@ -1,0 +1,21 @@
+# Claves y configuración privada (NUNCA subir a GitHub)
+.env
+.env.*
+!.env.example
+
+# Sesión de WhatsApp del bot (equivale a tener tu teléfono desbloqueado)
+bot/auth/
+bot/auth_info*/
+
+# Dependencias y compilados
+node_modules/
+.next/
+out/
+dist/
+.vercel/
+
+# Registros y sistema
+*.log
+logs/
+.DS_Store
+Thumbs.db
