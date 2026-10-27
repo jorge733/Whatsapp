@@ -10,6 +10,14 @@ import { maybeSendDailySummary } from './summary.js';
 import { syncGroups } from './groups.js';
 import { log } from './logger.js';
 
+// La librería de cifrado de WhatsApp escribe detalles técnicos en la consola ("Closing session…").
+// Son normales; se ocultan para que la ventana sea fácil de leer.
+const NOISY = /^(Closing session|Opening session|Removing old closed session|Closing open session|Migrating session|Session already|Decrypted message with closed session)/;
+for (const level of ['log', 'info', 'warn']) {
+  const original = console[level].bind(console);
+  console[level] = (first, ...rest) => (typeof first === 'string' && NOISY.test(first) ? undefined : original(first, ...rest));
+}
+
 process.on('unhandledRejection', (e) => log.error('Error inesperado:', e?.message ?? e));
 process.on('uncaughtException', (e) => log.error('Error inesperado:', e?.message ?? e));
 

@@ -55,8 +55,26 @@ export async function refreshGroup(jid) {
   }
 }
 
+// WhatsApp limita cuántas veces se puede pedir la lista de grupos ("rate-overlimit"),
+// así que se pide como máximo una vez cada 30 segundos.
+const SYNC_MIN_MS = 30_000;
+let lastSyncAt = 0;
+let pendingSync = null;
+
 /** Lee todos los grupos de WhatsApp y los guarda en la base de datos. */
-export async function syncGroups({ print = false } = {}) {
+export function syncGroups(opts = {}) {
+  if (pendingSync) return pendingSync;
+  const wait = Math.max(0, lastSyncAt + SYNC_MIN_MS - Date.now());
+  pendingSync = new Promise((r) => setTimeout(r, wait))
+    .then(() => doSyncGroups(opts))
+    .finally(() => {
+      lastSyncAt = Date.now();
+      pendingSync = null;
+    });
+  return pendingSync;
+}
+
+async function doSyncGroups({ print = false } = {}) {
   const sock = getSocket();
   if (!sock) return [];
   let all;
