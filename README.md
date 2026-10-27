@@ -14,7 +14,7 @@ Zona horaria: **America/Santiago**. Todas las claves van en archivos `.env` que 
 
 - [x] **Etapa 1** — Base de datos en Supabase → [guía](docs/ETAPA-1-SUPABASE.md)
 - [x] **Etapa 2** — Bot conectado a WhatsApp (prueba en tu computador) → [guía](docs/ETAPA-2-BOT.md)
-- [ ] **Etapa 3** — Panel web publicado en Vercel
+- [x] **Etapa 3** — Panel web publicado en Vercel → [guía](docs/ETAPA-3-PANEL.md)
 - [ ] **Etapa 4** — Bot 24/7 en Oracle Cloud con pm2
 
 ## Tablas principales
@@ -49,3 +49,19 @@ Zona horaria: **America/Santiago**. Todas las claves van en archivos `.env` que 
 | `actions.js` | Acciones en WhatsApp con pausas entre cada una |
 
 Pruebas automáticas: `cd bot && npm test`.
+
+## Panel: cómo está organizado (`panel/`)
+
+Next.js (App Router) + Tailwind. Usa solo la clave pública de Supabase y la sesión del usuario;
+la base de datos (RLS) solo entrega datos a los correos de `app_admins`.
+
+| Ruta | Sección |
+|---|---|
+| `app/(panel)/page.js` | Inicio: estado del bot (latido), QR, modo prueba, resumen del día |
+| `app/(panel)/registro` | Registro de acciones con filtros |
+| `app/(panel)/personas` | Buscar un número, advertencias, publicaciones, lista negra |
+| `app/(panel)/lista-negra` | Agregar / quitar números |
+| `app/(panel)/casos` | Casos para revisar (expulsar / ignorar) |
+| `app/(panel)/reglas` | Plantilla y reglas de cada grupo |
+| `app/(panel)/ajustes` | Ajustes generales y textos |
+| `proxy.js` | Exige sesión iniciada en todas las páginas |
