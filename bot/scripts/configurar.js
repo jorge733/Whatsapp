@@ -39,18 +39,29 @@ const key = await ask(
 console.log('\n3) ¿Cómo vincular WhatsApp?');
 console.log('   - Si el bot corre en un COMPUTADOR: deja vacío y presiona Enter (se usará código QR).');
 console.log('   - Si el bot corre en el MISMO CELULAR del bot: escribe el número del bot (ej: 56994487026).');
-const pairing = await ask(
-  '   Número del bot (o vacío): ',
-  (v) => v === '' || /^\+?[\d\s-]{9,20}$/.test(v),
-  'Escribe solo el número, ej: 56994487026, o deja vacío.',
-);
+let pairing = '';
+for (;;) {
+  const raw = await ask(
+    '   Número del bot (o vacío): ',
+    (v) => v === '' || /^\+?[\d\s-]{8,20}$/.test(v),
+    'Escribe solo el número, ej: 56994487026, o deja vacío.',
+  );
+  let digits = raw.replace(/\D/g, '');
+  if (digits.length === 9 && digits.startsWith('9')) digits = `56${digits}`; // agrega el código de Chile
+  if (!digits) break;
+  const ok = await rl.question(`   Se vinculará el WhatsApp del número +${digits}. ¿Es el número del BOT (no el tuyo personal)? (s/n): `);
+  if (/^s/i.test(ok.trim())) {
+    pairing = digits;
+    break;
+  }
+}
 rl.close();
 
 fs.writeFileSync(envPath, [
   '# Claves privadas del bot. NO compartir ni subir a GitHub.',
   `SUPABASE_URL=${url.replace(/\/+$/, '')}`,
   `SUPABASE_SECRET_KEY=${key}`,
-  ...(pairing ? [`PAIRING_PHONE=${pairing.replace(/\D/g, '')}`] : []),
+  ...(pairing ? [`PAIRING_PHONE=${pairing}`] : []),
   '',
 ].join('\n'));
 
